@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('./partials/head.ejs') %>
+  <script defer src="js/scripts.js"></script>
+  <script defer src="../js/patientedit.js"></script>
+  <body>
+    <span class="text-copied">Ipp copied</span>
+    <header>
+      <div class="container">
+        <img class="logo" src="images/medlink.JPG" alt="Logo" width="150px" />
+        <ul>
+          <% if(user) { %>
+          <button class="open-notifs-modal">
+            Notifs <% if(req_received.length > 0) { %> <sup></sup> <%}%>
+          </button>
+          <button class="allUsersBtn">Users</button>
+          <a class="auth logout" href="logout">Logout</a>
+          <%} else { %>
+          <a class="auth login" href="login">Login</a>
+          <a class="auth signup" href="signup">Sign Up</a>
+          <% } %>
+        </ul>
+      </div>
+    </header>
+    <section class="notifications-modal">
+      <h3>Les notifications</h3>
+      <ul>
+        <% allUsers.forEach((usa) => { %> <% if(req_received.length !== 0) { %>
+        <% req_received.forEach((req) => { %> <% if(req.sender === usa._id.toString()) { %>
+        <li>
+          <p><%=usa.username %> (<%=req.typeOfRequest %>)</p>
+          <div class="res-btns">
+            <a class="notif-res reject" href="/request/delete/<%=req._id %>"
+              >Rejeter</a
+            >
+            <% if(req.status === "false") { %>
+              <a class="notif-res accept" href="/request/access/<%=req._id %>">Accepter</a>
+            <% } else if(req.status === "true") { %>
+              <button class="accepted">Accepted</button>
+            <% } %>
+          </div>
+        </li>
+        <% } %> <% }) %> <% } %> <% }) %>
+      </ul>
+      <% if(req_received.length === 0) { %>
+      <h5>No Notifications to see</h5>
+      <% } %>
+    </section>
+    <article class="allUsers">
+      <span class="cancelusers">x</span>
+      <h1>Les utilisateurs</h1>
+      <%allUsers.forEach((ele) => { %> <% if(ele.isAdmin === undefined) { %>
+        <div class="user">
+        <p><%= ele.username %></p>
+        <% let requestSent = false; %>
+        <% let requestAccepted = {status: false, receiver: null, typeOfRequest: null}; %>
+        <% req_sent.forEach((req) => { %>
+          <% if (req.receiver === ele._id.toString() && req.status === "false" ) { %>
+            <% requestSent = true; %>
+          <% } else if (req.receiver === ele._id.toString() && req.status === "true") { %>
+            <% requestAccepted = {status: true, receiver: req.receiver, typeOfRequest: req.typeOfRequest}; %>
+          <% } %>
+        <%}); %>
+        <% if (requestSent) { %>
+          <p>Request Sent</p>
+        <% } else if(requestAccepted.status && requestAccepted.typeOfRequest === "readOnly") { %>
+          <a class="accessAllowed" href="/dashboard/user/<%=requestAccepted.receiver %>">Accédé</a>
+        <% } else if(requestAccepted.status && requestAccepted.typeOfRequest === "full access") { %>
+          <a class="accessAllowed" href="/dashboard/edit/user/<%=requestAccepted.receiver %>">Accédé</a>
+        <% } else { %>
+          <button class="accessReq" type="button" data-modal="<%= ele._id %>">
+            Demande d'accès
+          </button>
+        <% } %>
+      </div>
+      <form
+        class="accessReqModal"
+        data-receiver="<%=ele._id %>"
+        data-sender="<%=user._id%>"
+      >
+        <span class="close-accessReqModal">x</span>
+        <h1>Demande d'accès</h1>
+        <p>
+          En cliquant sur "Demande d'accès", vous enverrez une demande à
+          <strong><%=ele.username %></strong> pour accéder à sa liste de
+          patients. Cochez la case pour pouvoir y apporter des modifications.
+        </p>
+        <fieldset>
+          <input type="checkbox" name="checkbox" id="checkbox" />
+          <label for="checkbox"
+            >J'ai besoin l'accès de modifier les infos</label
+          >
+        </fieldset>
+        <button class="sendAccessReq">Demande l'accès</button>
+      </form>
+      <% } %> <% }) %>
+    </article>
+    <main class="dash">
+      <% if(patients.length !== 0) { %>
+      <div class="ajoute">
+        <div class="head-left">
+          <form class="search-form">
+            <div class="search-radios">
+              <span>
+                <label for="ipp" >Ipp </label>
+                <input type="radio" id="ipp" name="search-radio"  />
+              </span>
+              <span>
+                <label for="cin">CIN</label>
+                <input type="radio" id="cin" name="search-radio" />
+              </span>
+              <span>
+                <label for="nom" class="active">Nom & prénom </label>
+                <input type="radio" id="nom" name="search-radio" checked />
+              </span>
+              <span>
+                <label for="couverture">Couverture </label>
+                <input type="radio" id="couverture" name="search-radio" />
+              </span>
+            </div>
+            <input
+              type="text"
+              placeholder="chercher..."
+              class="chercher"
+              onkeyup="sendData(this)"
+            />
+          </form>
+          <button class="add-patient">+ Ajouter</button>
+        </div>
+      </div>
+      <table cellspacing="0">
+        <thead>
+          <tr>
+            <th>NP</th>
+            <th>IPP</th>
+            <th>CIN</th>
+            <th> Prénom & Nom </th>
+            <th>Couverture</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% patients.map((patient) => { %>
+          <tr class="field">
+            <th><%=patient.np %></th>
+            <th class="copy-data"><%=patient.ipp %></th>
+            <th><%=patient.cin %></th>
+            <th><%=patient.firstname %> <%=patient.lastname %></th>
+            <th><%=patient.couverture %></th>
+            <th class="action">
+              <a class="edit" href="/dashboard?id=<%=patient._id %>"
+                >Modifier</a
+              >
+              <a class="delete" href="/patients/delete/<%=patient._id %>">x</a>
+            </th>
+            <% }) %>
+          </tr>
+        </tbody>
+      </table>
+      <% } %> <% if(patients.length === 0) { %>
+      <div class="noOne">
+        <div class="noData-img"></div>
+        <h1>Ajouter votre premier patient</h1>
+        <button class="add-patient">Ajouter</button>
+      </div>
+      <% } %>
+    </main>
+    <!-- Form: -->
+    <form class="form add-patient-form">
+      <span class="cancel">x</span>
+      <h1>Ajouter un patient</h1>
+      <div>
+        <span>
+          <label for="np" class="nplabel">NP: </label>
+          <input
+            type="text"
+            name="np"
+            id="np"
+            value="<%=patients.length + 1%>"
+          />
+        </span>
+        <div class="err np"></div>
+      </div>
+      <div>
+        <span>
+          <label for="ipp">IPP: </label>
+          <input type="text" name="ipp" id="ipp" />
+        </span>
+        <div class="err ipp"></div>
+      </div>
+      <div>
+        <span>
+          <label for="cin">CIN: </label>
+          <input type="text" name="cin" id="cin" />
+        </span>
+        <div class="err cin"></div>
+      </div>
+      <div>
+        <span>
+          <label for="lastname">Nom: </label>
+          <input type="text" name="lastname" id="lastname" />
+        </span>
+        <div class="err lastname"></div>
+      </div>
+      <div>
+        <span>
+          <label for="firstname">Prénom: </label>
+          <input type="text" name="firstname" id="firstname" />
+        </span>
+        <div class="err firstname"></div>
+      </div>
+      <div>
+        <span>
+          <label for="couverture">Couverture: </label>
+          <input type="text" name="couverture" id="couverture" />
+        </span>
+        <div class="err firstname"></div>
+      </div>
+      <div class="btns">
+        <button>Ajouter</button>
+      </div>
+    </form>
+    <!-- Edit Patient: -->
+    <% if(patient) { %>
+    <div id="overlay"></div>
+    <!-- Edit form -->
+    <main class="edit-container">
+      <form class="form edit-patient-form" data-user="<%=user.username %>">
+        <a href="/dashboard" class="cancelEdit">x</a>
+        <h1>Editez <%=patient.firstname%> <%=patient.lastname %></h1>
+        <div>
+          <span>
+            <label class="disabled-all" for="np" class="nplabel">NP: </label>
+            <input
+              class="disabled-all"
+              type="text"
+              name="np"
+              id="np"
+              value="<%=patient.np %>"
+            />
+          </span>
+          <div class="err np"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="ipp">IPP: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="ipp"
+              id="ipp"
+              value="<%=patient.ipp %>"
+            />
+          </span>
+          <div class="err ipp"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="cin">CIN: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="cin"
+              id="cin"
+              value="<%=patient.cin %>"
+            />
+          </span>
+          <div class="err cin"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="lastname">Nom: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="lastname"
+              id="lastname"
+              value="<%=patient.lastname %>"
+            />
+          </span>
+          <div class="err lastname"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="firstname">Prénom: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="firstname"
+              id="firstname"
+              value="<%=patient.firstname %>"
+            />
+          </span>
+          <div class="err firstname"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="couverture">Couverture: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="couverture"
+              id="couverture"
+              value="<%=patient.couverture %>"
+            />
+          </span>
+          <div class="err firstname"></div>
+        </div>
+        <div class="btns">
+          <button class="disabled">Modifier</button>
+        </div>
+      </form>
+      <span class="enableModif">Activer les modifications</span>
+    </main>
+    <span class="message">Les informations sont modifiées</span>
+    <% } %>
+  </body>
+</html>

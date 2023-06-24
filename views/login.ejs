@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include('./partials/head.ejs') %>
+<body>
+    <a href="/signingup" class="ghost">Sign up</a>
+    <div class="back-img"></div>
+    <form class="auth-form">
+        <h2>Login</h2>
+        <div>
+            <label for="username">Username: </label><br>
+            <input type="text" name="username" id="username"><br>
+            <div class="err username"></div>
+        </div>
+        <div>
+            <br><label for="password">Password: </label><br>
+            <input type="password" name="password" id="password"><br>
+            <div class="err password"></div>
+        </div>
+        <br><button>Login</button>
+    </form>
+    <script>
+        const form = document.querySelector('form');
+        const usernameError = document.querySelector('.err.username');
+        const passwordError = document.querySelector('.err.password');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = form.username.value;
+            const password = form.password.value;
+            try {
+                const result = await fetch('/login', {
+                method: 'post',
+                body: JSON.stringify({username, password}),
+                headers: {'Content-Type': 'application/json'}
+            })
+            const data = result.json();
+            data.then((res) => {
+                if(res.errors) {
+                    usernameError.textContent = res.errors.username;
+                    passwordError.textContent = res.errors.password;
+                }
+                if(res.user) {
+                    window.location.href = '/dashboard'
+                }
+            })
+            } catch(err) {
+                console.log(err);
+            }
+        })
+    </script>
+</body>
+</html>

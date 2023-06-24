@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('./partials/head.ejs') %>
+  <body>
+    <span class="text-copied">Ipp copied</span>
+    <header>
+      <div class="container">
+        <img class="logo" src="/images/medlink.JPG" alt="Logo" width="150px" />
+        <ul>
+          <a class="auth logout" href="/dashboard">Retour</a>
+        </ul>
+      </div>
+    </header>
+    <main class="dash">
+      <table cellspacing="0">
+        <thead>
+          <tr>
+            <th>NP</th>
+            <th>IPP</th>
+            <th>CIN</th>
+            <th>Nom & Prénom</th>
+            <th>Couverture</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% patients.map((patient) => { %>
+          <tr class="field">
+            <th><%=patient.np %></th>
+            <th class="copy-data"><%=patient.ipp %></th>
+            <th><%=patient.cin %></th>
+            <th><%=patient.firstname %> <%=patient.lastname %></th>
+            <th><%=patient.couverture %></th>
+            <th class="action">
+              <a
+                class="edit"
+                href="/dashboard/edit/user/<%=accededUser._id.toString()%>?id=<%=patient._id %>"
+                >Modifier</a
+              >
+            </th>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </main>
+    <% if(patient) { %>
+    <div id="overlay"></div>
+    <!-- Edit form -->
+    <main class="edit-container">
+      <form
+        class="form edit-patient-form"
+        data-CurrentUser="<%= CurrentUser.username %>"
+      >
+        <a
+          href="/dashboard/edit/user/<%=accededUser._id.toString()%>"
+          class="cancelEdit"
+          >x</a
+        >
+        <h1>Editez <%=patient.firstname%> <%=patient.lastname %></h1>
+        <div>
+          <span>
+            <label class="disabled-all" for="np" class="nplabel">NP: </label>
+            <input
+              class="disabled-all"
+              type="text"
+              name="np"
+              id="np"
+              value="<%=patient.np %>"
+            />
+          </span>
+          <div class="err np"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="ipp">IPP: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="ipp"
+              id="ipp"
+              value="<%=patient.ipp %>"
+            />
+          </span>
+          <div class="err ipp"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="cin">CIN: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="cin"
+              id="cin"
+              value="<%=patient.cin %>"
+            />
+          </span>
+          <div class="err cin"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="lastname">Nom: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="lastname"
+              id="lastname"
+              value="<%=patient.lastname %>"
+            />
+          </span>
+          <div class="err lastname"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="firstname">Prénom: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="firstname"
+              id="firstname"
+              value="<%=patient.firstname %>"
+            />
+          </span>
+          <div class="err firstname"></div>
+        </div>
+        <div>
+          <span>
+            <label class="disabled" for="couverture">Couverture: </label>
+            <input
+              class="disabled"
+              type="text"
+              name="couverture"
+              id="couverture"
+              value="<%=patient.couverture %>"
+            />
+          </span>
+          <div class="err firstname"></div>
+        </div>
+        <div class="btns">
+          <button class="disabled">Modifier</button>
+        </div>
+      </form>
+      <span class="enableModif">Enable modifications</span>
+    </main>
+    <span class="message">Les informations sont modifiées</span>
+    <% } %>
+  </body>
+  <script>
+    document.querySelectorAll('.copy-data').forEach((cell) => {
+    cell.addEventListener('click', () => {
+      const textToCopy = cell.innerText;
+      const tempTextarea = document.createElement('textarea');
+      tempTextarea.value = textToCopy;
+      document.body.appendChild(tempTextarea);
+      tempTextarea.select();
+      tempTextarea.setSelectionRange(0, 99999);
+      document.execCommand('copy');
+      document.body.removeChild(tempTextarea);
+      document.querySelector('.text-copied').classList.add('active')
+      setTimeout(() => {
+        document.querySelector('.text-copied').classList.remove('active')
+      }, 2000);
+    });
+  });
+    const enableModif = document.querySelector(".enableModif");
+    const disabled = document.querySelectorAll(".disabled");
+    enableModif.addEventListener("click", (e) => {
+      disabled.forEach((disabledEle) => {
+        disabledEle.classList.remove("disabled");
+      });
+    });
+    const form = document.querySelector(".edit-patient-form");
+    const message = document.querySelector(".message");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const np = form.np.value;
+      const ipp = form.ipp.value;
+      const cin = form.cin.value;
+      const firstname = form.firstname.value;
+      const lastname = form.lastname.value;
+      const couverture = form.couverture.value;
+      const daysOfWeek = [
+        "Dimache",
+        "Lundi",
+        "Mardi",
+        "Mercredi",
+        "Jeudi",
+        "Vendredi",
+        "Samedi",
+      ];
+      const now = new Date();
+      const day = daysOfWeek[now.getDay()];
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      if (np === "" || ipp === "" || firstname === "" || lastname === "") {
+        message.classList.remove("success");
+        message.classList.add("error");
+        message.textContent = "Juste la couverture et CIN qui peut étre vide!";
+        setTimeout(() => {
+          message.classList.remove("error");
+        }, 3000);
+      } else {
+        message.classList.remove("error");
+        message.classList.add("success");
+        message.textContent = "Les informations sont modifiées";
+        setTimeout(() => {
+          message.classList.remove("success");
+        }, 2000);
+        await fetch("/patient/update", {
+          method: "post",
+          body: JSON.stringify({
+            np,
+            ipp,
+            cin,
+            firstname,
+            lastname,
+            couverture,
+          }),
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    });
+  </script>
+</html>

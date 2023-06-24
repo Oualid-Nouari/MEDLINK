@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include('./partials/head.ejs') %>
+<body>
+  <span class="text-copied">Ipp copied</span>
+    <header>
+        <div class="container">
+          <img class="logo" src="/images/medlink.JPG" alt="Logo" width="150px" />
+          <ul>
+            <a class="auth logout" href="/dashboard">Retour</a>
+          </ul>
+        </div>
+      </header>
+      <main class="dash">
+        <table cellspacing="0">
+            <thead>
+              <tr>
+                <th>NP</th>
+                <th>IPP</th>
+                <th>CIN</th>
+                <th>Nom & Prénom</th>
+                <th>Couverture</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% patients.map((patient) => { %>
+              <tr class="field">
+                <th><%=patient.np %></th>
+                <th class="copy-data"><%=patient.ipp %></th>
+                <th><%=patient.cin %></th>
+                <th><%=patient.firstname %> <%=patient.lastname %></th>
+                <th><%=patient.couverture %></th>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+      </main>
+</body>
+<script>
+  // Copy by click:
+  document.querySelectorAll('.copy-data').forEach((cell) => {
+    cell.addEventListener('click', () => {
+      const textToCopy = cell.innerText;
+      const tempTextarea = document.createElement('textarea');
+      tempTextarea.value = textToCopy;
+      document.body.appendChild(tempTextarea);
+      tempTextarea.select();
+      tempTextarea.setSelectionRange(0, 99999);
+      document.execCommand('copy');
+      document.body.removeChild(tempTextarea);
+      document.querySelector('.text-copied').classList.add('active')
+      setTimeout(() => {
+        document.querySelector('.text-copied').classList.remove('active')
+      }, 2000);
+    });
+  });
+</script>
+</html>

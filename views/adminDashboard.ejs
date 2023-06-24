@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('./partials/head.ejs') %>
+  <script defer src="js/admin.js"></script>
+  <body>
+    <header>
+      <div class="container">
+        <img class="logo" src="images/medlink.JPG" alt="Logo" width="150px" />
+        <ul>
+          <% if(user) { %>
+          <a class="auth logout" href="logout">Logout</a>
+          <%} else { %>
+          <a class="auth login" href="login">Login</a>
+          <a class="auth signup" href="signup">Sign Up</a>
+          <% } %>
+        </ul>
+      </div>
+    </header>
+    <main class="dash">
+      
+      <% if(allUsers.length !== 0) { %>
+      <div class="ajoute users">
+        <% if(withoutAdmin.length !== 0) { %>
+          <h2>Les utilisateurs</h2>
+        <% } else { %>
+          <h1>No user</h1>
+        <% } %>
+        <button class="add-patient addUserBtn">+ Ajouter</button>
+      </div>
+      <table cellspacing="0" class="users">
+          <thead>
+            <tr>
+              <th>username</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+        <tbody>
+          <% allUsers.map((user) => { %> <% if(user.isAdmin === undefined) { %>
+          <tr class="field">
+            <th><%=user.username %></th>
+            <th class="action">
+              <a class="delete" href="/users/delete/<%=user._id %>">x</a>
+            </th>
+          </tr>
+          <% } %> <% }) %>
+        </tbody>
+      </table>
+      <% } %> <% if(allUsers.length === 0) { %>
+      <div class="noOne">
+        <div class="noData-img"></div>
+        <h1>Ajouter Un utilisateur</h1>
+        <button class="add-patient">Ajouter</button>
+      </div>
+      <% } %>
+    </main>
+    <!-- ************* DELETE CONFIRMATION FORM *************** -->
+    <!-- <div class="delete-conf-container">
+        <h3>Vous voulez vraiment supprimer ce utilisateur ?</h3>
+        <div class="del-btns">
+            <a class="decline" >Non</a>
+            <a class="confirm" >Oui</a>
+        </div>
+    </div> -->
+    <!-- *************** ADD USER FORM *************** -->
+    <form class="auth-form addUserForm">
+      <a class="close-addUser-form">x</a>
+      <h2>Ajouter Un utilisateur</h2>
+      <div>
+        <label for="username">Username: </label>
+        <input type="text" name="username" id="username" />
+        <div class="err username"></div>
+      </div>
+      <div>
+        <label for="password">Password: </label>
+        <input type="password" name="password" id="password" />
+        <div class="err password"></div>
+      </div>
+      <br /><button>Ajouter</button>
+    </form>
+  </body>
+</html>
