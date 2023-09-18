@@ -21,7 +21,7 @@ const patient_post = async (req, res, next) => {
     let allPatient = await patientModel.find();
     const token = req.cookies.user_token;
     if(token) {
-        jwt.verify(token, 'scrrrrrrrrrrt', async function(err, decodedToken){
+        jwt.verify(token, process.env.TOKEN_SECRET_KEY, async function(err, decodedToken){
             if(err) {
                 next();
             } else {

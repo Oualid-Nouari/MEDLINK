@@ -5,7 +5,7 @@ const userModel = require('../models/user');
 const authRequired = (req, res, next) => {
     const token = req.cookies.user_token;
     if(token) {
-        jwt.verify(token, 'scrrrrrrrrrrt', async function(err){
+        jwt.verify(token, process.env.TOKEN_SECRET_KEY, async function(err){
             if(err) {
                 res.redirect('/login')
             } else {
@@ -20,7 +20,7 @@ const authRequired = (req, res, next) => {
 const checkUser = (req, res, next) => {
     const token = req.cookies.user_token;
     if(token) {
-        jwt.verify(token, 'scrrrrrrrrrrt', async function(err, decodedToken){
+        jwt.verify(token, process.env.TOKEN_SECRET_KEY, async function(err, decodedToken){
             if(err) {
                 next();
             } else {

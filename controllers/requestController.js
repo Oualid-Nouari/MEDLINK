@@ -44,7 +44,7 @@ const edit_access_user = async (req, res, next) => {
     let patientId = req.query;
     let patient = await patientModel.findById(patientId.id);
     if(token) {
-        jwt.verify(token, 'scrrrrrrrrrrt', async function(err, decodedToken) {
+        jwt.verify(token, process.env.TOKEN_SECRET_KEY, async function(err, decodedToken) {
             if(err) {
                 next();
             } else {

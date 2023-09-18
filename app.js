@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
@@ -13,8 +14,8 @@ const requestModel = require('./models/Requests');
 
 app.set('view engine', 'ejs');
 // Coonection:
-const dbConnect = 'mongodb://0.0.0.0/osix';
-mongoose.connect(dbConnect).then(() => app.listen(3000));
+const dbConnect = process.env.dbConnect;
+mongoose.connect(dbConnect).then(() => app.listen(process.env.PORT));
 
 // middleware:
 app.use(express.urlencoded({ extended: true }));
@@ -40,7 +41,7 @@ app.get('/dashboard', authRequired, async (req, res) => {
     let PatientId = req.query;
     let patient = await patientModel.findById(PatientId.id);
     if (token) {
-        jwt.verify(token, 'scrrrrrrrrrrt', async function (err, decodedToken) {
+        jwt.verify(token, process.env.TOKEN_SECRET_KEY, async function (err, decodedToken) {
             if (err) {
                 next();
             } else {
@@ -84,7 +85,7 @@ app.post('/getSearchedPatients', (req, res, next) => {
     let searchBy = req.body.searchBy;
     let token = req.cookies.user_token;
     if (token) {
-        jwt.verify(token, 'scrrrrrrrrrrt', async (err, decodedToken) => {
+        jwt.verify(token, process.env.TOKEN_SECRET_KEY, async (err, decodedToken) => {
             if (err) {
                 next();
             } else {

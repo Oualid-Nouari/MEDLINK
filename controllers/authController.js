@@ -24,7 +24,7 @@ const handleError = (err) => {
 }
 const maxAge = 3 * 60 * 60 * 24;
 const createToken = (id) => {
-    return jwt.sign({id}, 'scrrrrrrrrrrt', {expiresIn: maxAge})
+    return jwt.sign({id}, process.env.TOKEN_SECRET_KEY, {expiresIn: maxAge})
 }
 
 const signingup_post = async (req, res, next) => {
